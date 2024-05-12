@@ -10,6 +10,7 @@ import { fragmentArray } from 'ember-data-model-fragments/attributes';
 export default class Resources extends Fragment {
   @attr('number') cpu;
   @attr('number') memory;
+  @attr('number') gpuMemory;
   @attr('number') memoryMax;
   @attr('number') disk;
   @attr('number') iops;

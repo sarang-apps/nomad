@@ -39,12 +39,16 @@ export default class NodePrimaryMetric extends Component {
   get reservedAmount() {
     if (this.metric === 'cpu') return this.tracker.reservedCPU;
     if (this.metric === 'memory') return this.tracker.reservedMemory;
+    if (this.metric === 'gpuMemory') return this.tracker.reservedGpuMemory;
     return null;
   }
 
   get chartClass() {
     if (this.metric === 'cpu') return 'is-info';
     if (this.metric === 'memory') return 'is-danger';
+    if (this.metric === 'gpuUtil') return 'is-info';
+    if (this.metric === 'gpuMemory') return 'is-danger';
+    if (this.metric === 'gpuTemperature') return 'is-danger';
     return 'is-primary';
   }
 
@@ -61,6 +65,19 @@ export default class NodePrimaryMetric extends Component {
 
     if (this.metric === 'memory' && get(this.args.node, 'reserved.memory')) {
       const memory = this.args.node.reserved.memory;
+      return [
+        {
+          label: `${formatScheduledBytes(memory, 'MiB')} reserved`,
+          percent: memory / this.reservedAmount,
+        },
+      ];
+    }
+
+    if (
+      this.metric === 'gpuMemory' &&
+      get(this.args.node, 'reserved.gpuMemory')
+    ) {
+      const memory = this.args.node.reserved.gpuMemory;
       return [
         {
           label: `${formatScheduledBytes(memory, 'MiB')} reserved`,

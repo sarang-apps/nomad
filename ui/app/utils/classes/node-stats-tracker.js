@@ -29,6 +29,8 @@ class NodeStatsTracker extends EmberObject.extend(AbstractStatsTracker) {
   }
 
   append(frame) {
+    console.log('frame: ', frame);
+    // console.log("this.node", this.node);
     const timestamp = new Date(Math.floor(frame.Timestamp / 1000000));
 
     const cpuUsed = Math.floor(frame.CPUTicksConsumed) || 0;
@@ -44,6 +46,45 @@ class NodeStatsTracker extends EmberObject.extend(AbstractStatsTracker) {
       used: memoryUsed,
       percent: percent(memoryUsed / 1024 / 1024, this.reservedMemory),
     });
+
+    // GPU stats
+    frame.DeviceStats.forEach((device) => {
+      const gpuId = Object.keys(device.InstanceStats)[0];
+      if (gpuId.toLowerCase().includes('gpu')) {
+        const gpuStats = device.InstanceStats[gpuId].Stats;
+
+        if (gpuStats) {
+          // GPU Memory
+          const data = {
+            timestamp,
+            used: gpuStats.Attributes['Memory state'].IntNumeratorVal,
+            percent:
+              gpuStats.Attributes['Memory state'].IntNumeratorVal /
+              gpuStats.Attributes['Memory state'].IntDenominatorVal,
+          };
+          this.gpuMemory.pushObject(data);
+          this.reservedGpuMemory =
+            gpuStats.Attributes['Memory state'].IntDenominatorVal;
+
+          // GPU utilization
+          this.gpuUtil.pushObject({
+            timestamp,
+            percent:
+              gpuStats.Attributes['GPU utilization'].IntNumeratorVal / 100,
+          });
+
+          // GPU Temperature
+          this.gpuTemperature.pushObject({
+            timestamp,
+            percent: gpuStats.Attributes['Temperature'].IntNumeratorVal / 100,
+          });
+        } else {
+          console.log(`No stats found for GPU with ID: ${gpuId}`);
+        }
+      }
+      // console.log(typeof this.gpuMemory);
+      // console.log('keys:', Object.keys(this.gpuMemory));
+    });
   }
 
   pause() {
@@ -55,7 +96,7 @@ class NodeStatsTracker extends EmberObject.extend(AbstractStatsTracker) {
   // Static figures, denominators for stats
   @alias('node.resources.cpu') reservedCPU;
   @alias('node.resources.memory') reservedMemory;
-
+  @alias('node.resources.gpuMemory') reservedGpuMemory;
   // Dynamic figures, collected over time
   // []{ timestamp: Date, used: Number, percent: Number }
   @computed('bufferSize', 'node')
@@ -65,6 +106,21 @@ class NodeStatsTracker extends EmberObject.extend(AbstractStatsTracker) {
 
   @computed('bufferSize', 'node')
   get memory() {
+    return RollingArray(this.bufferSize);
+  }
+
+  @computed('bufferSize', 'node')
+  get gpuMemory() {
+    return RollingArray(this.bufferSize);
+  }
+
+  @computed('bufferSize', 'node')
+  get gpuUtil() {
+    return RollingArray(this.bufferSize);
+  }
+
+  @computed('bufferSize', 'node')
+  get gpuTemperature() {
     return RollingArray(this.bufferSize);
   }
 }

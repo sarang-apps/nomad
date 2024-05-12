@@ -445,12 +445,31 @@
 
     </div>
     <div class="boxed-section-body">
-      <div class="columns">
-        <div class="column">
-          <PrimaryMetric::Node @node={{this.model}} @metric="cpu" />
+      <div>
+        <div class="columns">
+          <div class="column">
+            <PrimaryMetric::Node @node={{this.model}} @metric="gpuUtil" />
+          </div>
+          <div class="column">
+            <PrimaryMetric::Node @node={{this.model}} @metric="gpuMemory" />
+          </div>
+          </div>
+      </div>
+      <div style="max-width: 50%;">
+        <div class="columns">
+          <div class="column">
+            <PrimaryMetric::Node @node={{this.model}} @metric="gpuTemperature" />
+          </div>
         </div>
-        <div class="column">
-          <PrimaryMetric::Node @node={{this.model}} @metric="memory" />
+      </div>
+      <div>
+        <div class="columns">
+          <div class="column">
+            <PrimaryMetric::Node @node={{this.model}} @metric="cpu" />
+          </div>
+          <div class="column">
+            <PrimaryMetric::Node @node={{this.model}} @metric="memory" />
+          </div>
         </div>
       </div>
     </div>
